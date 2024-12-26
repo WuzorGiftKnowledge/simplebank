@@ -42,7 +42,7 @@ DELETE FROM transfers
 WHERE id = $1
 `
 
-func (q *Queries) DeleteTransfer(ctx context.Context, id int32) error {
+func (q *Queries) DeleteTransfer(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteTransfer, id)
 	return err
 }
@@ -52,7 +52,7 @@ SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetTransfer(ctx context.Context, id int32) (Transfer, error) {
+func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 	row := q.db.QueryRowContext(ctx, getTransfer, id)
 	var i Transfer
 	err := row.Scan(
@@ -124,7 +124,7 @@ RETURNING id, from_account_id, to_account_id, amount, created_at
 `
 
 type UpdateTransferParams struct {
-	ID     int32 `json:"id"`
+	ID     int64 `json:"id"`
 	Amount int64 `json:"amount"`
 }
 

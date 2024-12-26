@@ -1,0 +1,22 @@
+# Use the official Jenkins agent image as the base
+FROM jenkins/agent:latest
+
+# Switch to root to install Go
+USER root
+
+# Set environment variables for Go
+ENV GO_VERSION=1.20.6
+ENV GOPATH=/go
+ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
+
+# Install Go
+RUN curl -fsSL https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz && \
+    mkdir -p $GOPATH/src $GOPATH/bin $GOPATH/pkg && \
+    chmod -R 777 $GOPATH
+
+# Verify Go installation
+RUN /usr/local/go/bin/go version
+
+# Switch back to Jenkins user
+USER jenkins
+WORKDIR /home/jenkins

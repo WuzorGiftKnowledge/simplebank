@@ -1,0 +1,21 @@
+FROM jenkins/jenkins:lts
+
+USER root
+
+# Install Docker CLI
+RUN apt-get update && \
+    apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release python3 python3-pip && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
+    echo "deb [arch=amd64] https://download.docker.com/linux/debian bullseye stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get -y install docker-ce-cli && \
+    apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+RUN python3 --version && pip3 --version
+
+USER jenkins
+
+EXPOSE 8080
+EXPOSE 50000

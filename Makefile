@@ -7,6 +7,16 @@ DB_NAME=simplebank
 DB_PORT=5432
 
 postgres:
+	@if docker ps -a --format '{{.Names}}' | grep -q "^${DB_CONTAINER_NAME}$$"; then \
+		if docker ps --format '{{.Names}}' | grep -q "^${DB_CONTAINER_NAME}$$"; then \
+			echo "Stopping container ${DB_CONTAINER_NAME}..."; \
+			docker stop "${DB_CONTAINER_NAME}"; \
+		fi; \
+		echo "Removing container ${DB_CONTAINER_NAME}..."; \
+		docker rm "${DB_CONTAINER_NAME}"; \
+	else \
+		echo "Container ${DB_CONTAINER_NAME} does not exist"; \
+	fi;\
 	docker run --name $(DB_CONTAINER_NAME) -e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -h localhost -p $(DB_PORT):5432 -d postgres
 
 createdb:
