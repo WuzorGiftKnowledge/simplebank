@@ -1,0 +1,69 @@
+name: Run unit tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: simplebank
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    environment: development
+
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: simplebank
+      DB_PORT: 5432
+      DB_HOST: localhost
+      DB_CONTAINER_NAME: postgres
+      HTTP_SERVER_ADDRESS: 0.0.0.0:8080   # Changed to localhost since we're using services
+      DB_SOURCE: postgresql
+      DRIVER: postgres
+      NETWORK_NAME: postgres
+      ENVIRONMENT: development
+    steps:
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.22
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+        sudo mv migrate.linux-amd64 /usr/bin/migrate
+        which migrate
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin
+        ls -l /usr/local/bin | grep golangci-lint
+        chmod +x /usr/local/bin/golangci-lint
+        golangci-lint --version
+    - name: Run Migration
+      run: make migrateup
+      
+    - name: Run Linter
+      run: golangci-lint run --timeout 10m
+
+    - name: Test
+      run: make test

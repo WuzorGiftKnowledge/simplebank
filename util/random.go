@@ -8,13 +8,15 @@ import (
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
+
 var r *rand.Rand
+
 func init() {
 	// Create a new random source seeded with the current time
-    source := rand.NewSource(time.Now().UnixNano())
+	source := rand.NewSource(time.Now().UnixNano())
 
-    // Create a new rand.Rand instance using that source
-    r = rand.New(source)
+	// Create a new rand.Rand instance using that source
+	r = rand.New(source)
 }
 
 // RandomInt generates a random integer between min and max

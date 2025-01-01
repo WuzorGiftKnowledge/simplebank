@@ -6,10 +6,10 @@ DB_PASSWORD ?= root
 DB_NAME ?= simplebank
 DB_PORT ?= 5432
 NETWORK_NAME ?= postgres
-DB_HOST ?= postgres
+DB_HOST ?= localhost
 start: postgres createdb migrateup
 postgres: stop-database create-network
-	docker run --name $(DB_CONTAINER_NAME) --network=$(NETWORK_NAME) -e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -p $(DB_PORT):5432 -d postgres
+	docker run --name $(DB_CONTAINER_NAME) --network=$(NETWORK_NAME) -e POSTGRES_USER=$(DB_USER) -e POSTGRES_PASSWORD=$(DB_PASSWORD) -p $(DB_PORT):$(DB_PORT) -d postgres
 
 stop: migratedown stop-database
 # Target for creating the database
@@ -33,12 +33,12 @@ createdb:
 
 	# Run the createdb command
 	sleep 10
-	docker exec -e PGPASSWORD=$(DB_PASSWORD) $(DB_CONTAINER_NAME) createdb -U $(DB_USER) -h $(DB_CONTAINER_NAME) -O $(DB_USER) $(DB_NAME)
+	docker exec -e PGPASSWORD=$(DB_PASSWORD) $(DB_CONTAINER_NAME) createdb -U $(DB_USER) -h $(DB_HOST) -O $(DB_USER) $(DB_NAME)
 dropdb:
-	docker exec -e PGPASSWORD=$(DB_PASSWORD) $(DB_CONTAINER_NAME) dropdb -U $(DB_USER)  -h $(DB_CONTAINER_NAME) -O $(DB_USER) $(DB_NAME) 
+	docker exec -e PGPASSWORD=$(DB_PASSWORD) $(DB_CONTAINER_NAME) dropdb -U $(DB_USER)  -h $(DB_HOST) -O $(DB_USER) $(DB_NAME) 
 
 migrateup:
-	migrate -path db/migration -database "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_CONTAINER_NAME):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose up
 
 sqlc:
 	sqlc generate
@@ -48,7 +48,7 @@ test:
 
 migratedown:
 	
-	migrate -path db/migration -database "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_CONTAINER_NAME):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose down -all
+	migrate -path db/migration -database "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose down -all
 
 create-network:
 	@if docker network ls --format '{{.Name}}' | grep -q "^$(NETWORK_NAME)$$"; then \
@@ -78,3 +78,6 @@ remove-network:
 	else \
 		echo "Network $(NETWORK_NAME) does not exist."; \
 	fi
+
+server:
+	go run main.go

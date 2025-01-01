@@ -1,15 +1,14 @@
 package db
 
-import(
-	"database/sql"
+import (
 	"context"
+	"database/sql"
 	"fmt"
 )
 
-
-type Store struct{
+type Store struct {
 	*sql.DB
-	*Queries 
+	*Queries
 }
 
 func NewStore(db *sql.DB) *Store {
@@ -37,6 +36,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 
 	return tx.Commit()
 }
+
 // TransferTxParams contains the input parameters of the transfer transaction
 type TransferTxParams struct {
 	FromAccountID int64 `json:"from_account_id"`
