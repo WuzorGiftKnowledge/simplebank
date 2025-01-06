@@ -36,7 +36,6 @@ jobs:
       DB_HOST: localhost
       DB_CONTAINER_NAME: postgres
       HTTP_SERVER_ADDRESS: 0.0.0.0:8080   # Changed to localhost since we're using services
-      DB_SOURCE: postgresql
       DRIVER: postgres
       NETWORK_NAME: postgres
       ENVIRONMENT: development
